@@ -127,7 +127,7 @@
 
     <div style="margin-left : 1019px;">
         <button class="add-button" onclick="openModal()">Add User</button>
-        <button class="logout-button" onclick="logout()">Logout</button>
+        <button class="logout-button" onclick="window.location.href='logout.php';">Logout</button>
 
     </div>
 
@@ -211,14 +211,6 @@
             document.getElementById("first_name").value = '';
             document.getElementById("last_name").value = '';
             document.getElementById("email").value = '';
-        }
-
-        // Logout function
-        function logout() {
-            // Implement your logout logic here
-            alert("Logging out...");
-            // Redirect to logout script or perform logout actions
-            // Example: window.location.href = 'logout.php';
         }
 
         function editRow(id) {
