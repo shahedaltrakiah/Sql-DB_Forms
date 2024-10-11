@@ -1,20 +1,29 @@
 <?php
 include('config.php');
 
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    $id = $_POST['id'] ?? null; // Use null coalescing operator
 
-$id = $_GET['id'];
+    if ($id) {
+        try {
+            // Prepare a DELETE statement
+            $sql = "DELETE FROM users WHERE id = :id";
+            $stmt = $conn->prepare($sql);
+            $stmt->bindParam(':id', $id, PDO::PARAM_INT);
 
-try {
-    // Prepare a DELETE statement
-    $sql = "DELETE FROM users WHERE id = :id";
-    $stmt = $conn->prepare($sql);
-    // Bind the `id` parameter to the SQL query
-    $stmt->bindParam(':id', $id, PDO::PARAM_INT);
-
-} catch (PDOException $e) {
-    echo "Error: " . $e->getMessage();
+            // Execute the statement
+            if ($stmt->execute()) {
+                echo "User deleted successfully.";
+            } else {
+                echo "Error deleting user.";
+            }
+        } catch (PDOException $e) {
+            echo "Error: " . $e->getMessage();
+        }
+    } else {
+        echo "No user ID provided.";
+    }
+} else {
+    echo "Invalid request method.";
 }
-
-
-
 ?>

@@ -38,24 +38,31 @@
             background-color: #f1f1f1;
         }
 
-        .edit-button, .delete-button {
+        .edit-button,
+        .delete-button,
+        .add-button,
+        .logout-button {
             background-color: #16C3B0;
             color: white;
             padding: 10px 15px;
             border: none;
             border-radius: 5px;
             cursor: pointer;
+            margin-right: 10px;
         }
 
-        .edit-button:hover {
+        .edit-button:hover,
+        .add-button:hover {
             background-color: #13a391;
         }
 
-        .delete-button {
+        .delete-button,
+        .logout-button {
             background-color: #FD5B4E;
         }
 
-        .delete-button:hover {
+        .delete-button:hover,
+        .logout-button:hover {
             background-color: #e04b3d;
         }
 
@@ -72,12 +79,57 @@
         .save-button:hover {
             background-color: #e04b3d;
         }
+
+        /* Modal styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgb(0, 0, 0);
+            background-color: rgba(0, 0, 0, 0.4);
+            padding-top: 60px;
+        }
+
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%;
+            max-width: 400px;
+            border-radius: 5px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
     </style>
 </head>
 
 <body>
 
     <h1>User Management</h1>
+
+    <div style="margin-left : 1019px;">
+        <button class="add-button" onclick="openModal()">Add User</button>
+        <button class="logout-button" onclick="logout()">Logout</button>
+
+    </div>
 
     <?php
     include('config.php');
@@ -104,9 +156,9 @@
             foreach ($result as $row) {
                 echo "<tr id='row-{$row['id']}'>";
                 echo "<td>" . $row['id'] . "</td>";
-                echo "<td class='editable' data-id='{$row['id']}' data-field='first_name'>" . $row['first_name'] . "</td>";
-                echo "<td class='editable' data-id='{$row['id']}' data-field='last_name'>" . $row['last_name'] . "</td>";
-                echo "<td class='editable' data-id='{$row['id']}' data-field='email'>" . $row['email'] . "</td>";
+                echo "<td class='editable' data-id='{$row['id']}' data-field='first_name'>" . htmlspecialchars($row['first_name']) . "</td>";
+                echo "<td class='editable' data-id='{$row['id']}' data-field='last_name'>" . htmlspecialchars($row['last_name']) . "</td>";
+                echo "<td class='editable' data-id='{$row['id']}' data-field='email'>" . htmlspecialchars($row['email']) . "</td>";
                 echo "<td>
                         <button class='edit-button' onclick='editRow(" . $row['id'] . ")'>Edit</button>
                         <button class='save-button' id='save-" . $row['id'] . "' onclick='saveRow(" . $row['id'] . ")'>Save</button>
@@ -124,7 +176,51 @@
     }
     ?>
 
+    <!-- Add User Modal -->
+    <div id="myModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h2>Add User</h2>
+            <label for="first_name">First Name:</label>
+            <input type="text" id="first_name" required>
+            <br><br>
+            <label for="last_name">Last Name:</label>
+            <input type="text" id="last_name" required>
+            <br><br>
+            <label for="email">Email:</label>
+            <input type="email" id="email" required>
+            <br><br>
+            <button class="add-button" onclick="addUser()">Add User</button>
+        </div>
+    </div>
+
     <script>
+        // Open the modal
+        function openModal() {
+            document.getElementById("myModal").style.display = "block";
+        }
+
+        // Close the modal
+        function closeModal() {
+            document.getElementById("myModal").style.display = "none";
+            clearModalFields();
+        }
+
+        // Clear modal input fields
+        function clearModalFields() {
+            document.getElementById("first_name").value = '';
+            document.getElementById("last_name").value = '';
+            document.getElementById("email").value = '';
+        }
+
+        // Logout function
+        function logout() {
+            // Implement your logout logic here
+            alert("Logging out...");
+            // Redirect to logout script or perform logout actions
+            // Example: window.location.href = 'logout.php';
+        }
+
         function editRow(id) {
             let cells = document.querySelectorAll("#row-" + id + " .editable");
             cells.forEach(cell => {
@@ -147,7 +243,7 @@
             let xhr = new XMLHttpRequest();
             xhr.open("POST", "edit.php", true);
             xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-            xhr.onload = function() {
+            xhr.onload = function () {
                 if (xhr.status == 200) {
                     alert("User updated successfully!");
                     location.reload(); // Reload the page to update the table
@@ -164,7 +260,7 @@
                 let xhr = new XMLHttpRequest();
                 xhr.open("POST", "delete.php", true);
                 xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
-                xhr.onload = function() {
+                xhr.onload = function () {
                     if (xhr.status == 200) {
                         alert("User deleted successfully!");
                         location.reload(); // Reload the page to remove the deleted row
@@ -175,8 +271,35 @@
                 xhr.send(`id=${id}`);
             }
         }
-    </script>
 
+        function addUser() {
+            let first_name = document.getElementById("first_name").value;
+            let last_name = document.getElementById("last_name").value;
+            let email = document.getElementById("email").value;
+
+            // Send an AJAX request to add the user
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", "add.php", true);
+            xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+            xhr.onload = function () {
+                if (xhr.status == 200) {
+                    alert("User added successfully!");
+                    closeModal(); // Close the modal after adding
+                    location.reload(); // Reload the page to update the table
+                } else {
+                    alert("Error adding user.");
+                }
+            };
+            xhr.send(`first_name=${first_name}&last_name=${last_name}&email=${email}`);
+        }
+
+        // Close the modal when clicking outside of it
+        window.onclick = function (event) {
+            if (event.target == document.getElementById("myModal")) {
+                closeModal();
+            }
+        }
+    </script>
 </body>
 
 </html>
